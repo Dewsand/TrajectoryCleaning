@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<link rel="icon" type="image/png" href="/static/img/favicon.ico">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+	<title>轨迹清洗系统</title>
+
+	<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+    <meta name="viewport" content="width=device-width" />
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet" />
+
+    <link href="/static/css/animate.min.css" rel="stylesheet"/>
+
+    <link href="/static/css/light-bootstrap-dashboard.css?v=1.4.0" rel="stylesheet"/>
+
+    <link href="/static/css/demo.css" rel="stylesheet" />
+
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+    <link href='/static/css/font_css.css' rel='stylesheet' type='text/css'>
+    <link href="/static/css/pe-icon-7-stroke.css" rel="stylesheet" />
+
+    <!-- 加载OpenLayers 类库 -->
+    <link rel="stylesheet" href="/static/css/ol.css" type="text/css">
+    <script src="/static/js/ol.js"></script>
+    <style>
+        .map-class {
+            height: 58rem;
+            width: 100%;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="sidebar" data-color="blue" data-image="/static/img/sidebar-5.jpg">
+
+    <!--   you can change the color of the sidebar using: data-color="blue | azure | green | orange | red | purple" -->
+
+
+        <div class="sidebar-wrapper">
+            <div class="logo">
+                <a class="simple-text">
+                    轨迹清洗系统
+                </a>
+            </div>
+
+            <ul class="nav">
+                <li>
+                    <a href="/">
+                        <i class="pe-7s-user"></i>
+                        <p>首页</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="table">
+                        <i class="pe-7s-note2"></i>
+                        <p>轨迹信息</p>
+                    </a>
+                </li>
+                <li>
+                    <a href="charts">
+                        <i class="pe-7s-graph"></i>
+                        <p>数据统计</p>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="maps">
+                        <i class="pe-7s-map-marker"></i>
+                        <p>地图展示</p>
+                    </a>
+                </li>
+                <li class="active-pro">
+                    <a href="about">
+                        <i class="pe-7s-rocket"></i>
+                        <p>关于本项目</p>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-panel">
+        <nav class="navbar navbar-default navbar-fixed">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand">地图展示</a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a><p>trajectory cleaning</p></a>
+                        </li>
+                        <li class="separator hidden-lg hidden-md"></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div id="map-id" class="map-class" d="{{ point }}"></div>
+<!--        <div id="map"></div>-->
+
+        <footer class="footer">
+            <div class="container-fluid">
+                <p class="copyright pull-right">
+                    &copy; <script>document.write(new Date().getFullYear())</script>
+                </p>
+            </div>
+        </footer>
+
+    </div>
+</div>
+
+
+</body>
+
+    <script src="/static/js/jquery.3.2.1.min.js" type="text/javascript"></script>
+	<script src="/static/js/bootstrap.min.js" type="text/javascript"></script>
+
+	<script src="/static/js/chartist.min.js"></script>
+
+    <script src="/static/js/bootstrap-notify.js"></script>
+
+	<script src="/static/js/light-bootstrap-dashboard.js?v=1.4.0"></script>
+
+	<script src="/static/js/demo.js"></script>
+
+
+<!--    <script>-->
+<!--        $().ready(function(){-->
+<!--            demo.initGoogleMaps();-->
+<!--        });-->
+<!--    </script>-->
+<script type="text/javascript">
+
+    //获取从后端传来的轨迹点数据，解析
+    var points = eval("(" + document.getElementById('map-id').getAttribute('d') + ")");
+    // alert(points.raw);
+
+     //定义一个Map容器 创建地图
+    var map = new ol.Map({
+        // 绑定 DIV 元素
+        target: 'map-id',
+        // 添加图层
+        layers: [
+            new ol.layer.Tile({ //瓦面图层
+                // 设置图层的数据源
+                source: new ol.source.OSM(),
+            })
+        ],
+        // 设置视图窗口
+        view: new ol.View({
+            //center: ol.proj.fromLonLat([37.41, 8.82]),
+            //中心点 , 'EPSG:4326', 'EPSG:3857'
+            // center: ol.proj.fromLonLat([-8.61, 41.15]),
+            //图层放大缩小
+            projection: 'EPSG:4326',
+            center: [-8.61, 41.15],
+            zoom: 15
+
+        })
+    });
+
+
+    // 获取轨迹点
+    // var points = [];
+    //var points_raw = [[-8.614692, 41.154426], [-8.613288, 41.153922], [-8.611578, 41.153517], [-8.608905, 41.153517], [-8.606259, 41.153247], [-8.606997, 41.15178], [-8.607123, 41.151114], [-8.606016, 41.150979], [-8.604288, 41.150988], [-8.602767, 41.150952], [-8.601057, 41.150997], [-8.600274, 41.151078], [-8.600256, 41.151042], [-8.600157, 41.150862], [-8.600382, 41.149503], [-8.59968, 41.14935]];
+
+    //var points_match = [[-8.614691681731747, 41.15442699144575], [-8.613321447191872, 41.15392303371964], [-8.61157527702608, 41.153587838679535], [-8.608905279057007, 41.15349508445523], [-8.606284081211006, 41.153232104957375], [-8.607095412049523, 41.151804161825474], [-8.607161581515792, 41.15103994877706], [-8.606016195966781, 41.15097205427735], [-8.6042501, 41.1509449], [-8.602227223042652, 41.15097211862756], [-8.6011373, 41.1510477], [-8.600131, 41.1510849], [-8.6001410581273, 41.15103004967913], [-8.600171595810226, 41.15086351751491], [-8.600422393188778, 41.14950702638406], [-8.5999379, 41.1493965]]
+
+    var raw_list = points.raw;
+    var match_list = points.match;
+
+    var points_raw = points.raw;
+    var points_match = points.match;
+
+    var point;
+    var line_raw;
+
+    for(var j=0; j<raw_list.length; j++){
+        points_raw = raw_list[j];
+
+        line_raw = new ol.Feature(
+            new ol.geom.LineString(points_raw)
+        );
+
+        map.addLayer(new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: [line_raw]
+            }),
+            style: new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    //边界样式
+                    color: "red",
+                    width: 3
+                })
+            })
+        }));
+
+
+
+        for(i=0; i<points_raw.length; i++){
+            point = new ol.Feature({
+                geometry: new ol.geom.Point(points_raw[i])
+            });
+
+            map.addLayer(new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: [point]
+                }),
+                style: new ol.style.Style({
+                    image: new ol.style.Circle({
+                        // 点的颜色
+                        fill: new ol.style.Fill({
+                            color: 'red'
+                        }),
+                        // 圆形半径
+                        radius: 5
+                    })
+                })
+            }));
+        }
+    }
+
+
+
+
+    var line_match;
+
+    for(var j=0; j<match_list.length; j++){
+        points_match = match_list[j];
+        line_match = new ol.Feature(
+            new ol.geom.LineString(points_match)
+        );
+
+        map.addLayer(new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: [line_match]
+            }),
+            style: new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    //边界样式
+                    color: "green",
+                    width: 3
+                })
+            })
+        }));
+
+        for(i=0; i<points_match.length; i++){
+            point = new ol.Feature({
+                geometry: new ol.geom.Point(points_match[i])
+            });
+
+            map.addLayer(new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: [point]
+                }),
+                style: new ol.style.Style({
+                    image: new ol.style.Circle({
+                        // 点的颜色
+                        fill: new ol.style.Fill({
+                            color: 'green'
+                        }),
+                        // 圆形半径
+                        radius: 5
+                    })
+                })
+            }));
+        }
+    }
+
+
+
+</script>
+
+</html>
